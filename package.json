@@ -1,0 +1,21 @@
+{
+  "name": "ceub",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+   "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "chalk": "^3.0.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "file-type": "^14.1.4",
+    "inquirer": "^7.1.0",
+    "node-html-parser": "^1.2.13",
+    "nodemon": "^2.0.2"
+  }
+}
