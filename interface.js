@@ -21,7 +21,26 @@ return inquirer
       message: 'Cual vas a bajar',
       // choices: elements.map((item=>item.description))
 						choices: elements,
-						pageSize: 20
+						pageSize: 10
+    }
+  ])
+  .then(answer => {
+    return answer
+  });
+}
+
+function askAllOrOne(elements) {
+return inquirer
+  .prompt([
+    {
+      type: 'list',
+      name: 'option',
+      message: 'Uno solo o todos',
+      choices: [
+							{name:'Un solo subtitulo', value:'one'},
+							{name:'Todos', value: 'all'}
+						],
+						pageSize: 10
     }
   ])
   .then(answer => {
@@ -31,5 +50,6 @@ return inquirer
 
 module.exports = {
 	askTitle,
-	showOptions
+	showOptions,
+	askAllOrOne
 };
