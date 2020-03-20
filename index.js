@@ -2,7 +2,6 @@ const express = require('express');
 const app = express()
 const port = 8085;
 const https = require('https').Server(app)
-const axios = require('axios');
 const {
 	parse
 } = require('node-html-parser');
@@ -14,9 +13,9 @@ const {
 	showOptions,
 	askAllOrOne
 } = require('./interface');
+const {sendTitleRequest, goToSelectedSub, download} = require('./requests');
 const FileType = require('file-type');
-const Promise = require("bluebird");
-
+const Promise = require('bluebird');
 
 async function startProcess() {
 	let allOrOne = await askAllOrOne();
@@ -54,28 +53,6 @@ async function startProcess() {
 	}
 }
 
-function sendTitleRequest(title) {
-	console.log(chalk.cyan('Searching subtitles, please wait'));
-	return axios({
-			method: 'get',
-			url: 'https://www.subdivx.com/index.php',
-			params: {
-				buscar: title,
-				accion: 5,
-				masdesc: '',
-				subtitulos: 1,
-				realiza_b: 1
-			}
-		})
-		.then(function(response) {
-			return (response.data)
-		})
-		.catch(function(error) {
-			console.log(error);
-			process.exit()
-		});
-}
-
 function getElements(data) {
 	return new Promise(function(resolve, reject) {
 		let page = parse(data);
@@ -97,22 +74,6 @@ function getElements(data) {
 	});
 }
 
-function goToSelectedSub(selectedOption) {
-	console.log(chalk.cyan('Going to subtitle page, please wait'));
-	let link = selectedOption.option || selectedOption.value
-	let escapedLink = encodeURI(link)
-	return axios({
-			method: 'get',
-			url: escapedLink
-		})
-		.then(function(response) {
-			return (response.data)
-		})
-		.catch(function(error) {
-			console.log(error);
-		});
-}
-
 function getDownloadLink(subPageData) {
 	let subPage = parse(subPageData);
 	let link = subPage.querySelectorAll('.link1')[0].getAttribute('href')
@@ -121,29 +82,6 @@ function getDownloadLink(subPageData) {
 	});
 	let escapedLink = encodeURI(link)
 	return escapedLink
-}
-
-function download(downloadLink) {
-	console.log(chalk.cyan('Downloading subtitle, please wait'));
-	return new Promise(function(resolve, reject) {
-		let url = new URL(downloadLink);
-		let id = url.searchParams.get('id');
-		let directory = '/subs';
-		axios({
-			method: "get",
-			url: downloadLink,
-			responseType: "stream"
-		}).then(function(response) {
-			let stream = response.data.pipe(fs.createWriteStream(`.${directory}/${id}`));
-			stream.on('finish', () => {
-				console.log(chalk.green(`Subtitle downloaded successfully to ${__dirname}${directory}`));
-				resolve(`${__dirname}${directory}/${id}`)
-			});
-		}).catch(function(e) {
-			console.log(e);
-			process.exit()
-		})
-	});
 }
 
 function addExtension(filepath) {
