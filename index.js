@@ -13,7 +13,11 @@ const {
 	showOptions,
 	askAllOrOne
 } = require('./interface');
-const {sendTitleRequest, goToSelectedSub, download} = require('./requests');
+const {
+	sendTitleRequest,
+	goToSelectedSub,
+	download
+} = require('./requests');
 const FileType = require('file-type');
 const Promise = require('bluebird');
 
@@ -25,31 +29,83 @@ async function startProcess() {
 	let {
 		title
 	} = await askTitle();
+	switch (allOrOne.option) {
+		case 'one':
+			oneSubHandler(title)
+			break;
+		case 'all':
+			allSubsHandler(title)
+			break;
+		case 'season':
+			seasonSubsHandler(title)
+			break;
+		default:
+	}
+}
+
+async function oneSubHandler(title) {
 	let data = await sendTitleRequest(title);
 	let elements = await getElements(data);
-	if (allOrOne.option === 'one') {
-		let selectedOption = await showOptions(elements)
-		let subPageData = await goToSelectedSub(selectedOption)
-		let downloadLink = await getDownloadLink(subPageData)
-		let filePath = await download(downloadLink);
-		let subtitleFile = await addExtension(filePath);
-		console.log({
-			subtitleFile
+	let selectedOption = await showOptions(elements)
+	let subPageData = await goToSelectedSub(selectedOption)
+	let downloadLink = await getDownloadLink(subPageData)
+	let filePath = await download(downloadLink);
+	let subtitleFile = await addExtension(filePath);
+	console.log({
+		subtitleFile
+	});
+	process.exit();
+}
+
+async function allSubsHandler(title) {
+	let data = await sendTitleRequest(title);
+	let elements = await getElements(data);
+	let allSubsPageData = await getAllSubsPageData(elements)
+	let allSubsLinks = allSubsPageData.map((item, i) => getDownloadLink(item));
+	let filesPaths = await downloadAllSubs(allSubsLinks)
+	let extensionPromises = filesPaths.map((item, i) => {
+		return addExtension(item)
+	});
+	let subtitlesFilesWithExt = Promise.all(extensionPromises).then((res) => {
+		res.forEach((item, i) => {
+			console.log(chalk.green(item));
 		});
-		process.exit();
-	} else { //allOrOne.option === 'all'
+		process.exit()
+	})
+}
+
+async function seasonSubsHandler(title){
+	let isValidTitle = await checkTitle(title);
+	do {
+		let data = await sendTitleRequest(title);
+		let elements = await getElements(data);
 		let allSubsPageData = await getAllSubsPageData(elements)
 		let allSubsLinks = allSubsPageData.map((item, i) => getDownloadLink(item));
 		let filesPaths = await downloadAllSubs(allSubsLinks)
-		let extensionPromises = filesPaths.map( (item, i) => {
+		let extensionPromises = filesPaths.map((item, i) => {
 			return addExtension(item)
 		});
-		let subtitlesFilesWithExt = Promise.all(extensionPromises).then((res)=> {
+		let subtitlesFilesWithExt = Promise.all(extensionPromises).then((res) => {
 			res.forEach((item, i) => {
 				console.log(chalk.green(item));
 			});
-			process.exit()
 		})
+		let nextChapter = await getNextChapter(title);
+		let titleWithoutChapter = title.substring(0,title.length-2)
+		let titleWithNextChapter = titleWithoutChapter + nextChapter
+		console.log(chalk.bold(`Starting with ${titleWithNextChapter}`));
+		title = titleWithNextChapter;
+	} while (true);
+		process.exit()
+}
+
+function getNextChapter(title) {
+	let lastCharacters = Number(title.slice(-2));
+	let next = lastCharacters + 1;
+	if (next>=10) {
+		return next
+	}else {
+		return String('0'+next)
 	}
 }
 
@@ -134,14 +190,24 @@ function downloadAllSubs(elements) {
 		})
 		.then(function(data) {
 			console.log(chalk.bgGreen.bold('SUCCESS DOWNLOADING ALL SUBS'));
-			// console.log({
-			// 	data
-			// });
 			return data
 		}).catch(function(err) {
 			console.log('ERROR');
 			console.log(err);
 		});
+}
+
+function checkTitle(title){
+	title = title.trim()
+	let lastWord = title.split(" ").pop();
+	let exp = new RegExp(/s\d{2}e\d{2}/gi);
+	let hasCorrectSyntax = exp.test(lastWord);
+	if (!hasCorrectSyntax) {
+		console.log(chalk.red('Escribe bien la temporada y el capitulo. Ej: Black Mirror s02e04'));
+		process.exit()
+	}else {
+		return true;
+	}
 }
 
 https.listen(port, function(err) {

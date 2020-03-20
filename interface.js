@@ -38,7 +38,8 @@ return inquirer
       message: 'Uno solo o todos',
       choices: [
 							{name:'Un solo subtitulo', value:'one'},
-							{name:'Todos', value: 'all'}
+							{name:'Todos los subtitulos de un capitulo/pelicula', value: 'all'},
+							{name:'Todos los subtitulos de una temporada', value: 'season'}
 						],
 						pageSize: 10
     }
