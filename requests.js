@@ -40,17 +40,23 @@ function goToSelectedSub(selectedOption) {
 		});
 }
 
-function download(downloadLink) {
+function download(params) {
 	console.log(chalk.cyan('Downloading subtitle, please wait'));
 	return new Promise(function(resolve, reject) {
-		let url = new URL(downloadLink);
+		let url = new URL(params.downloadLink);
 		let id = url.searchParams.get('id');
-		let directory = '/subs';
+		let directory = params.directory ?`/subs/${params.directory}`: '/subs';
 		axios({
 			method: "get",
-			url: downloadLink,
+			url: params.downloadLink,
 			responseType: "stream"
 		}).then(function(response) {
+			if (!fs.existsSync(`.${'/subs'}`)) {
+				fs.mkdirSync(`.${'/subs'}`);
+			}
+			if (!fs.existsSync(`.${directory}`)) {
+				fs.mkdirSync(`.${directory}`);
+			}
 			let stream = response.data.pipe(fs.createWriteStream(`.${directory}/${id}`));
 			stream.on('finish', () => {
 				console.log(chalk.green(`Subtitle downloaded successfully to ${__dirname}${directory}`));

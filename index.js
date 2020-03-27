@@ -49,7 +49,7 @@ async function oneSubHandler(title) {
 	let selectedOption = await showOptions(elements)
 	let subPageData = await goToSelectedSub(selectedOption)
 	let downloadLink = await getDownloadLink(subPageData)
-	let filePath = await download(downloadLink);
+	let filePath = await download({downloadLink:downloadLink});
 	let subtitleFile = await addExtension(filePath);
 	console.log({
 		subtitleFile
@@ -81,7 +81,8 @@ async function seasonSubsHandler(title){
 		let elements = await getElements(data);
 		let allSubsPageData = await getAllSubsPageData(elements)
 		let allSubsLinks = allSubsPageData.map((item, i) => getDownloadLink(item));
-		let filesPaths = await downloadAllSubs(allSubsLinks)
+		let capitulo = title.substring(title.length-2,title.length)
+		let filesPaths = await downloadAllSubs(allSubsLinks, capitulo)
 		let extensionPromises = filesPaths.map((item, i) => {
 			return addExtension(item)
 		});
@@ -142,6 +143,7 @@ function getDownloadLink(subPageData) {
 
 function addExtension(filepath) {
 	return new Promise(function(resolve, reject) {
+		console.log({filepath});
 		FileType.fromFile(filepath).then((data) => {
 			fs.rename(filepath, `${filepath}.${data.ext}`, (err) => {
 				if (err) throw err;
@@ -174,9 +176,9 @@ function getAllSubsPageData(elements) {
 		});
 }
 
-function downloadAllSubs(elements) {
+function downloadAllSubs(elements, capitulo) {
 	return Promise.map(elements, function(currentElement) {
-			return download(currentElement)
+			return download({downloadLink:currentElement, directory:capitulo})
 				.then(function(filepath) {
 					console.log(chalk.green(`Downloaded: ${currentElement}\n`));
 					return filepath
@@ -203,7 +205,7 @@ function checkTitle(title){
 	let exp = new RegExp(/s\d{2}e\d{2}/gi);
 	let hasCorrectSyntax = exp.test(lastWord);
 	if (!hasCorrectSyntax) {
-		console.log(chalk.red('Escribe bien la temporada y el capitulo. Ej: Black Mirror s02e04'));
+		console.log(chalk.red(`Escribe bien la temporada y el capitulo. Ej: Black Mirror ${chalk.inverse('s02e04')}`));
 		process.exit()
 	}else {
 		return true;
