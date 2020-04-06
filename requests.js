@@ -1,6 +1,25 @@
 const axios = require('axios');
 const chalk = require('chalk');
 const fs = require('fs');
+const axiosRetry = require('axios-retry');
+
+axiosRetry(axios, {
+	retries: 3,
+	retryCondition: function(error) {
+		console.log(chalk.yellow('Retrying, please wait...'));
+		if (axiosRetry.isNetworkOrIdempotentRequestError(error)) {
+			return true
+		}
+		if (error.errno === -3001 && error.code === 'EAI_AGAIN') {
+			return true
+		} else {
+			return false
+		}
+	},
+	retryDelay: function(retryCount) {
+		return retryCount * 10000;
+	}
+});
 
 function sendTitleRequest(title) {
 	console.log(chalk.cyan('Searching subtitles, please wait'));
@@ -19,7 +38,7 @@ function sendTitleRequest(title) {
 			return (response.data)
 		})
 		.catch(function(error) {
-			console.log(error);
+			console.log(chalk.red('Connection error, try again later'));
 			process.exit()
 		});
 }
@@ -45,7 +64,7 @@ function download(params) {
 	return new Promise(function(resolve, reject) {
 		let url = new URL(params.downloadLink);
 		let id = url.searchParams.get('id');
-		let directory = params.directory ?`/subs/${params.directory}`: '/subs';
+		let directory = params.directory ? `/subs/${params.directory}` : '/subs';
 		axios({
 			method: "get",
 			url: params.downloadLink,
@@ -59,7 +78,7 @@ function download(params) {
 			}
 			let stream = response.data.pipe(fs.createWriteStream(`.${directory}/${id}`));
 			stream.on('finish', () => {
-				console.log(chalk.green(`Subtitle downloaded successfully to ${__dirname}${directory}`));
+				console.log(chalk.green.inverse(`Subtitle downloaded successfully to ${__dirname}${directory}`));
 				resolve(`${__dirname}${directory}/${id}`)
 			});
 		}).catch(function(e) {
@@ -70,9 +89,8 @@ function download(params) {
 }
 
 
-module.exports={
- sendTitleRequest,
- goToSelectedSub,
- download
- 
+module.exports = {
+	sendTitleRequest,
+	goToSelectedSub,
+	download
 }

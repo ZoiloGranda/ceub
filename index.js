@@ -23,9 +23,6 @@ const Promise = require('bluebird');
 
 async function startProcess() {
 	let allOrOne = await askAllOrOne();
-	console.log({
-		allOrOne
-	});
 	let {
 		title
 	} = await askTitle();
@@ -143,7 +140,7 @@ function getDownloadLink(subPageData) {
 
 function addExtension(filepath) {
 	return new Promise(function(resolve, reject) {
-		console.log({filepath});
+		// console.log({filepath});
 		FileType.fromFile(filepath).then((data) => {
 			fs.rename(filepath, `${filepath}.${data.ext}`, (err) => {
 				if (err) throw err;
