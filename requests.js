@@ -26,6 +26,7 @@ function sendTitleRequest(title) {
 	return axios({
 			method: 'get',
 			url: 'https://www.subdivx.com/index.php',
+			timeout: 30000,
 			params: {
 				buscar: title,
 				accion: 5,
@@ -49,6 +50,7 @@ function goToSelectedSub(selectedOption) {
 	let escapedLink = encodeURI(link)
 	return axios({
 			method: 'get',
+			timeout: 30000,
 			url: escapedLink
 		})
 		.then(function(response) {
@@ -68,6 +70,7 @@ function download(params) {
 		axios({
 			method: "get",
 			url: params.downloadLink,
+			timeout: 30000,
 			responseType: "stream"
 		}).then(function(response) {
 			if (!fs.existsSync(`.${'/subs'}`)) {
@@ -76,7 +79,8 @@ function download(params) {
 			if (!fs.existsSync(`.${directory}`)) {
 				fs.mkdirSync(`.${directory}`);
 			}
-			let stream = response.data.pipe(fs.createWriteStream(`.${directory}/${id}`));
+			let stream = response.data.pipe(fs.createWriteStream(`${__dirname}${directory}/${id}`));
+			console.log(`${__dirname}${directory}/${id}`);
 			stream.on('finish', () => {
 				console.log(chalk.green.inverse(`Subtitle downloaded successfully to ${__dirname}${directory}`));
 				resolve(`${__dirname}${directory}/${id}`)

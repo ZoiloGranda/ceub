@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const express = require('express');
 const app = express()
 const port = 8085;
@@ -140,10 +141,11 @@ function getDownloadLink(subPageData) {
 
 function addExtension(filepath) {
 	return new Promise(function(resolve, reject) {
-		// console.log({filepath});
 		FileType.fromFile(filepath).then((data) => {
 			fs.rename(filepath, `${filepath}.${data.ext}`, (err) => {
-				if (err) throw err;
+				if (err){
+					 throw err;
+					}
 				resolve(`${filepath}.${data.ext}`)
 			})
 		})
