@@ -76,31 +76,29 @@ async function allSubsHandler(title) {
 }
 
 async function seasonSubsHandler(title) {
- checkTitle(title).then(async () => {
-  do {
-   const data = await sendTitleRequest(title);
-   const elements = await getElements(data);
-   const allSubsPageData = await getAllSubsPageData(elements)
-   const allSubsLinks = allSubsPageData.map((item) => getDownloadLink(item));
-   const capitulo = title.substring(title.length - 2, title.length)
-   const filesPaths = await downloadAllSubs(allSubsLinks, capitulo)
-   const extensionPromises = filesPaths.map((item) => {
-    return addExtension(item)
+ checkTitle(title)
+ do {
+  const data = await sendTitleRequest(title);
+  const elements = await getElements(data);
+  const allSubsPageData = await getAllSubsPageData(elements)
+  const allSubsLinks = allSubsPageData.map((item) => getDownloadLink(item));
+  const capitulo = title.substring(title.length - 2, title.length)
+  const filesPaths = await downloadAllSubs(allSubsLinks, capitulo)
+  const extensionPromises = filesPaths.map((item) => {
+   return addExtension(item)
+  });
+  Promise.all(extensionPromises).then((res) => {
+   // subtitles Files with extension
+   res.forEach((item) => {
+    console.log(chalk.green(item));
    });
-   Promise.all(extensionPromises).then((res) => {
-    // subtitles Files with extension
-    res.forEach((item) => {
-     console.log(chalk.green(item));
-    });
-   })
-   const nextChapter = getNextChapter(title);
-   const titleWithoutChapter = title.substring(0, title.length - 2)
-   const titleWithNextChapter = titleWithoutChapter + nextChapter
-   console.log(chalk.bold(`Starting with ${titleWithNextChapter}`));
-   title = titleWithNextChapter;
-  } while (true);
- });
- process.exit()
+  })
+  const nextChapter = getNextChapter(title);
+  const titleWithoutChapter = title.substring(0, title.length - 2)
+  const titleWithNextChapter = titleWithoutChapter + nextChapter
+  console.log(chalk.bold(`Starting with ${titleWithNextChapter}`));
+  title = titleWithNextChapter;
+ } while (true);
 }
 
 function getNextChapter(title) {

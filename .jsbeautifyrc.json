@@ -1,23 +1,23 @@
 {
  "css": {
   "allowed_file_extensions": ["css", "scss", "sass", "less"],
-  "end_with_newline": true, // End output with newline
-  "indent_char": " ", // Indentation character
-  "indent_size": 1, // Indentation size
-  "newline_between_rules": true, // Add a new line after every css rule
+  "end_with_newline": true,
+  "indent_char": " ",
+  "indent_size": 1,
+  "newline_between_rules": true,
   "selector_separator": " ",
-  "selector_separator_newline": true, // Separate selectors with newline or not (e.g. "a,\nbr" or "a, br")
+  "selector_separator_newline": true,
   "preserve_newlines": true,
-  "max_preserve_newlines": 1 //Number of line-breaks to be preserved in one chunk
+  "max_preserve_newlines": 1
  },
  "html": {
-  "indent_char": " ", // Indentation character
-  "indent_size": 1, // Indentation size
-  "wrap_attributes": "force" //Wrap attributes to new lines
+  "indent_char": " ",
+  "indent_size": 1,
+  "wrap_attributes": "force"
  },
  "js": {
-  "indent_char": " ", // Indentation character
-  "indent_size": 1, // Indentation size
+  "indent_char": " ",
+  "indent_size": 1,
   "brace_style": "collapse-preserve-inline",
   "keep_array_indentation": false,
   "break_chained_methods": true,
