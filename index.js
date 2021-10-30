@@ -144,11 +144,12 @@ function getDownloadLink(subPageData) {
 function addExtension(filepath) {
  return new Promise(function (resolve) {
   FileType.fromFile(filepath).then((data) => {
-   fs.rename(filepath, `${filepath}.${data.ext}`, (err) => {
+   const extension = data ? data.ext : 'rar'
+   fs.rename(filepath, `${filepath}.${extension}`, (err) => {
     if (err) {
      throw err;
     }
-    resolve(`${filepath}.${data.ext}`)
+    resolve(`${filepath}.${extension}`)
    })
   })
  });
